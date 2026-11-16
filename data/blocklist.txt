@@ -1,0 +1,4 @@
+# Takedown blocklist. One video per line: platform:videoID
+# Platforms: youtube, instagram, facebook, snapchat
+# Example:
+# youtube:dQw4w9WgXcQ

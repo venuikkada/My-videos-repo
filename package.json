@@ -1,0 +1,30 @@
+{
+  "name": "video-downloader",
+  "version": "1.0.0",
+  "description": "Free online downloader for public videos and audio (YouTube, Instagram, Facebook, Snapchat).",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/venuikkada/My-videos-repo.git"
+  },
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/venuikkada/My-videos-repo/issues"
+  },
+  "homepage": "https://github.com/venuikkada/My-videos-repo#readme",
+  "dependencies": {
+    "compression": "^1.8.2",
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}
