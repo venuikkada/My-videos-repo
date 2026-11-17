@@ -30,6 +30,14 @@ const YTDLP_ERROR_RULES = [
   [/timed out|timeout|connection reset|temporary failure|network is unreachable|unable to download|unable to connect/i, 'NETWORK', 'We could not reach the video site. Please try again.'],
 ];
 
+// Remove links and video IDs, so logs stay anonymous.
+function anonymize(text) {
+  return String(text)
+    .replace(/https?:\/\/\S+/g, '<url>')
+    .replace(/^(ERROR: \[[^\]]+\]) [^:]+:/gm, '$1 <id>:')
+    .slice(-500);
+}
+
 function friendlyYtdlpError(stderr) {
   // Look only at the "ERROR:" lines if there are any. WARNING lines can
   // contain scary words that are not the real problem.
@@ -39,7 +47,8 @@ function friendlyYtdlpError(stderr) {
   for (const [pattern, code, message] of YTDLP_ERROR_RULES) {
     if (pattern.test(text)) return new AppError(422, code, message);
   }
+  require('./logger').warn('unknown yt-dlp error', { detail: anonymize(text) });
   return new AppError(502, 'EXTRACT_FAILED', 'We could not read this video. Please check the link and try again.');
 }
 
-module.exports = { AppError, friendlyYtdlpError };
+module.exports = { AppError, friendlyYtdlpError, anonymize };

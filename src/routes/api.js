@@ -20,6 +20,7 @@ const { buildOptions, formatDuration } = require('../formats');
 const infoCache = require('../infoCache');
 const blocklist = require('../blocklist');
 const jobs = require('../jobs');
+const tools = require('../tools');
 
 const router = express.Router();
 
@@ -59,6 +60,13 @@ const reportLimiter = limiter(5, HOUR, 'Too many reports sent. Please email us i
 async function loadVideo(rawUrl) {
   if (typeof rawUrl !== 'string') throw new AppError(400, 'EMPTY', 'Please paste a link first.');
   const link = await normalizeLink(rawUrl);
+
+  if (tools.status.ytdlp === 'starting') {
+    throw new AppError(503, 'STARTING', 'The server is just starting. Please try again in one minute.');
+  }
+  if (tools.status.ytdlp === 'failed') {
+    throw new AppError(503, 'SERVER_SETUP', 'Downloads are not working right now. We are fixing it, please try again later.');
+  }
 
   if (blocklist.isBlocked(link.platform, link.id)) {
     throw new AppError(451, 'BLOCKED', 'This content has been removed from our service after a request from the copyright owner.');

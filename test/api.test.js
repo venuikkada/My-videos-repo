@@ -18,6 +18,7 @@ fs.chmodSync(process.env.YTDLP_PATH, 0o755);
 
 const { app } = require('../src/server');
 const { resetTempDir } = require('../src/cleanup');
+require('../src/tools').status.ytdlp = 'ready'; // tests use a fake yt-dlp
 
 let base;
 let server;

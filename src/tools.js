@@ -58,6 +58,20 @@ async function downloadYtdlp(target) {
   await fsp.rename(tmp, target); // swap in one step, so a running job is never broken
 }
 
+// Tool status, so the API can show a clear message while we get ready.
+const status = { ytdlp: 'starting' };
+
+// Run "yt-dlp --version". Returns { ok, version, error }.
+async function checkYtdlp() {
+  try {
+    const r = await runProcess(config.ytdlpPath, ['--version'], { timeoutMs: 60000, collectStdout: true });
+    if (r.code === 0) return { ok: true, version: r.stdout.trim() };
+    return { ok: false, error: (r.stderr || r.stdout || `exit code ${r.code}`).trim().slice(-600) };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 async function updateYtdlp(bin) {
   const r = await runProcess(bin, ['-U'], { timeoutMs: 180000, collectStdout: true });
   logger.info('yt-dlp update check', { ok: r.code === 0 });
@@ -75,6 +89,13 @@ async function setupTools() {
     // Managed hosting: use our own copy in ./bin
     const bin = path.join(config.toolsDir, 'yt-dlp');
     config.ytdlpPath = bin;
+
+    // The single-file yt-dlp unpacks itself into a temp folder before it
+    // runs. Shared hosting often blocks running programs from /tmp, so we
+    // give it a temp folder inside our own app folder instead.
+    const ownTmp = path.join(config.toolsDir, 'tmp');
+    await fsp.mkdir(ownTmp, { recursive: true });
+    process.env.TMPDIR = ownTmp;
     let stat = null;
     try {
       stat = await fsp.stat(bin);
@@ -95,11 +116,25 @@ async function setupTools() {
     setInterval(() => updateYtdlp(bin).catch(() => {}), ONE_DAY).unref();
   }
 
-  const version = await runProcess(config.ytdlpPath, ['--version'], { timeoutMs: 30000, collectStdout: true }).catch(() => null);
+  let check = await checkYtdlp();
+
+  // Our own copy is broken? Download it again once.
+  if (!check.ok && config.ytdlpPath.startsWith(config.toolsDir)) {
+    logger.warn('yt-dlp did not run, downloading again', { error: check.error });
+    try {
+      await downloadYtdlp(config.ytdlpPath);
+      check = await checkYtdlp();
+    } catch (err) {
+      check = { ok: false, error: err.message };
+    }
+  }
+
+  status.ytdlp = check.ok ? 'ready' : 'failed';
   logger.info('tools ready', {
-    ytdlp: version && version.code === 0 ? version.stdout.trim() : 'MISSING',
+    ytdlp: check.ok ? check.version : 'MISSING',
+    ytdlpError: check.ok ? undefined : check.error,
     ffmpeg: config.ffmpegPath === 'ffmpeg' ? 'system' : 'bundled',
   });
 }
 
-module.exports = { setupTools, findOnPath };
+module.exports = { setupTools, findOnPath, status };
