@@ -14,7 +14,7 @@ function esc(value) {
 }
 
 // Bump this when CSS/JS change, so phones load the new files.
-const ASSET_VERSION = '1';
+const ASSET_VERSION = '2';
 
 const NAV = [
   ['/', 'Home', 'navHome'],
