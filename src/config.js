@@ -36,8 +36,11 @@ const config = {
   // Folders
   tempDir: path.resolve(str('TEMP_DIR', path.join(rootDir, 'tmp'))),
   dataDir: path.resolve(str('DATA_DIR', path.join(rootDir, 'data'))),
+  // Where we keep our own copy of yt-dlp on managed hosting (see src/tools.js)
+  toolsDir: path.resolve(str('TOOLS_DIR', path.join(rootDir, 'bin'))),
 
-  // Tools (full path or just the command name)
+  // Tools (full path or just the command name). If not set, src/tools.js
+  // finds them at start-up (or downloads yt-dlp on managed hosting).
   ytdlpPath: str('YTDLP_PATH', 'yt-dlp'),
   ffmpegPath: str('FFMPEG_PATH', 'ffmpeg'),
   // JavaScript runtime that yt-dlp uses for YouTube. Node is already

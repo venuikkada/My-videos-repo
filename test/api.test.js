@@ -8,6 +8,7 @@ const fs = require('fs');
 
 // Settings must be set BEFORE the app is loaded.
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dl-test-'));
+process.env.NO_AUTOSTART = '1';
 process.env.YTDLP_PATH = path.join(__dirname, 'fake-ytdlp.js');
 process.env.TEMP_DIR = path.join(tmp, 'tmp');
 process.env.DATA_DIR = path.join(tmp, 'data');

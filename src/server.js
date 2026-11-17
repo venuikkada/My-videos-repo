@@ -13,6 +13,7 @@ const apiRouter = require('./routes/api');
 const { router: pagesRouter, notFound } = require('./routes/pages');
 const { resetTempDir, startCleanup } = require('./cleanup');
 const jobs = require('./jobs');
+const { setupTools } = require('./tools');
 
 const app = express();
 app.disable('x-powered-by');
@@ -72,6 +73,8 @@ app.use((err, req, res, next) => {
 async function start() {
   await resetTempDir();
   startCleanup();
+  // Find FFmpeg / yt-dlp in the background, so the website opens right away.
+  setupTools().catch((err) => logger.error('tool setup failed', { error: err.message }));
   app.listen(config.port, () => {
     logger.info('server started', {
       port: config.port,
@@ -82,7 +85,9 @@ async function start() {
   });
 }
 
-if (require.main === module) {
+// Start automatically. (Some hosts load this file with require() instead of
+// "node src/server.js", so we don't check require.main.) Tests set NO_AUTOSTART.
+if (!process.env.NO_AUTOSTART) {
   start().catch((err) => {
     logger.error('could not start', { error: err.message });
     process.exit(1);

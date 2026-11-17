@@ -16,7 +16,12 @@ function baseArgs() {
     '--socket-timeout', '20',
     '--retries', '3',
   ];
-  if (config.ytdlpJsRuntime) args.push('--js-runtimes', config.ytdlpJsRuntime);
+  if (config.ytdlpJsRuntime) {
+    // "node" = the same Node.js that runs this server (works even when
+    // "node" is not in the PATH, as on some managed hosting).
+    const runtime = config.ytdlpJsRuntime === 'node' ? `node:${process.execPath}` : config.ytdlpJsRuntime;
+    args.push('--js-runtimes', runtime);
+  }
   return args;
 }
 
